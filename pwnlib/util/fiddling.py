@@ -102,6 +102,8 @@ def bits(s, endian = 'big', zero = 0, one = 1):
       ['+', '+', '+', '+', '+', '+', '+', '-', '-', '-', '-', '-', '-', '-', '-', '-']
       >>> sum(bits("test"))
       17
+      >>> bits(0)
+      [0, 0, 0, 0, 0, 0, 0, 0]
 """
 
 
@@ -123,6 +125,8 @@ def bits(s, endian = 'big', zero = 0, one = 1):
             else:
                 out += byte[::-1]
     elif isinstance(s, (int, long)):
+        if s == 0:
+            out.append(zero)
         while s:
             bit, s = one if s & 1 else zero, s >> 1
             out.append(bit)
@@ -424,6 +428,32 @@ def ror(n, k, word_size = None):
     """A simple wrapper around :func:`rol`, which negates the values of `k`."""
 
     return rol(n, -k, word_size)
+
+def naf(n):
+    """naf(int) -> int generator
+
+    Returns a generator for the non-adjacent form (NAF[1]) of a number, `n`.  If
+    `naf(n)` generates `z_0, z_1, ...`, then `n == z_0 + z_1 * 2 + z_2 * 2**2,
+    ...`.
+
+    [1] https://en.wikipedia.org/wiki/Non-adjacent_form
+
+    Example:
+
+      >>> n = 45
+      >>> m = 0
+      >>> x = 1
+      >>> for z in naf(n):
+      ...     m += x * z
+      ...     x *= 2
+      >>> n == m
+      True
+
+    """
+    while n:
+        z = 2 - n % 4 if n & 1 else 0
+        n = (n - z) // 2
+        yield z
 
 def isprint(c):
     """isprint(c) -> bool
