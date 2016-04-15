@@ -566,14 +566,14 @@ class ContextType(object):
             True
         """
 
-        # Lowercase, remove everything non-alphanumeric
+        # Lowercase
         arch = arch.lower()
-        arch = arch.replace(string.punctuation, '')
 
         # Attempt to perform convenience and legacy compatibility
         # transformations.
-        transform = {'x86':'i386', 'ppc': 'powerpc', 'x86_64': 'amd64'}
-        for k, v in transform.items():
+        # We have to make sure that x86_64 appears before x86 for this to work correctly.
+        transform = [('ppc', 'powerpc'), ('x86_64', 'amd64'), ('x86', 'i386')]
+        for k, v in transform:
             if arch.startswith(k):
                 arch = arch.replace(k,v,1)
 
@@ -605,12 +605,12 @@ class ContextType(object):
             >>> context.bits = -1 #doctest: +ELLIPSIS
             Traceback (most recent call last):
             ...
-            AttributeError: bits must be >= 0 (-1)
+            AttributeError: bits must be > 0 (-1)
         """
         bits = int(bits)
 
         if bits <= 0:
-            raise AttributeError("bits must be >= 0 (%r)" % bits)
+            raise AttributeError("bits must be > 0 (%r)" % bits)
 
         return bits
 
@@ -659,7 +659,7 @@ class ContextType(object):
             >>> context.bytes = 0 #doctest: +ELLIPSIS
             Traceback (most recent call last):
             ...
-            AttributeError: bits must be >= 0 (0)
+            AttributeError: bits must be > 0 (0)
         """
         return self.bits/8
     @bytes.setter
